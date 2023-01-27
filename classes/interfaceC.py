@@ -48,6 +48,11 @@ class Interface_Client:
 
         self._client.enviar_dados(f"IDP:{id_periferico},NM:{nome},DD:{dado},DT:{data},CT:{contexto};")
 
+    def _envia_comando(self):
+        comando = self._entrada_comando.get()
+
+        self._client.enviar_dados(comando)
+
     def _gerar_dado_aleatorio(self):
         self._entrada_dado.delete(0, ttk.END)
         self._entrada_dado.insert(0, f"{random.random()}")
@@ -111,6 +116,13 @@ class Interface_Client:
 
         botao_gerar_dado = ttk.Button(self._app, text="Gerar dado Aleatorio", command=self._gerar_dado_aleatorio)
         botao_gerar_dado.grid(column=3, row=6, rowspan=2)
+
+        ttk.Label(self._app, text="Comando").grid(column=1, row=8, columnspan=3)
+        self._entrada_comando = ttk.Entry(self._app, w=65)
+        self._entrada_comando.grid(column=1, row=9, columnspan=3)
+
+        botao_enviar_comando = ttk.Button(self._app, text="Enviar comando", command=self._envia_comando)
+        botao_enviar_comando.grid(column=0, row=8, rowspan=2)
 
     def run(self):
 
