@@ -1,22 +1,18 @@
 import random
+import socket
+import threading
 import tkinter as ttk
+
+import select
 
 if __name__ == '__main__':
 
-    def conectar():
-
-        print("Não implementado !")
-
     def enviar_identificador():
 
-        id = entrada_id.get();
-        modelo = entrada_modelo.get();
+        id = entrada_id.get()
+        modelo = entrada_modelo.get()
 
-        if not (id and modelo):
-            print("Algo não definido !")
-            return
-
-        print(f"{id}:{modelo}")
+        enviarData(f"{id}:{modelo}")
 
     def enviar_dado():
 
@@ -26,15 +22,78 @@ if __name__ == '__main__':
         contexto = entrada_contexto.get()
         dado = entrada_dado.get()
 
-        if not (id_periferico and nome and data and contexto and dado):
-            print("Algo não definido !")
-            return
-
-        print(f"IDP:{id_periferico},NM:{nome},DD:{dado},DT:{data},CT:{contexto};")
+        enviarData(f"IDP:{id_periferico},NM:{nome},DD:{dado},DT:{data},CT:{contexto};")
 
     def gerar_dado_aleatorio():
         entrada_dado.delete(0, ttk.END)
         entrada_dado.insert(0, f"{random.random()}")
+
+    # Criando socket client
+
+    HOST = '127.0.0.1'
+    PORT = 8080
+
+    conectado = False
+
+    def conectar():
+
+        global conectado
+        global client
+
+        try:
+            if not conectado:
+                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client.connect((HOST, PORT))
+                status_client["text"] = "Conectado"
+                conectado = True
+
+        except ValueError:
+
+            status_client["text"] = "Desconectado"
+            conectado = False
+
+
+    def onData():
+
+        global conectado
+
+        while True:
+            if conectado:
+
+                try:
+                    data = client.recv(1024)
+
+                    if not data:
+                        client.shutdown(2)
+                        client.close()
+                        status_client["text"] = "Desconectado"
+                        conectado = False
+
+                    if data:
+                        mensagem_recebida["text"] = data.decode("UTF-8")
+
+                except ValueError:
+                    client.shutdown(2)
+                    client.close()
+                    status_client["text"] = "Desconectado"
+                    conectado = False
+
+
+    def enviarData(dado):
+
+        global conectado
+
+        if conectado:
+            client.sendall(str.encode(dado))
+
+    def desconectar():
+
+        global conectado
+
+        if conectado:
+            client.close()
+
+    threading.Thread(target=onData).start()
 
     app = ttk.Tk()
     app.title("Client tester")
@@ -109,7 +168,5 @@ if __name__ == '__main__':
 
     botao_gerar_dado = ttk.Button(app, text="Gerar dado Aleatorio", command=gerar_dado_aleatorio)
     botao_gerar_dado.grid(column=3, row=6, rowspan=2)
-
-    ###
 
     app.mainloop()
