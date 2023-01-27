@@ -11,7 +11,7 @@ class Client_Socket:
         self._conexao_status = False
         self._callback_ao_dados = lambda dados: print(f"Ainda não implementado callback de dado {dados}")
         self._callback_conexao_status_mudou = lambda status: print(f"Ainda não implementado callback conexão status {status}")
-        threading.Thread(target=self.verifica_dados).start()
+        threading.Thread(target=self._verifica_dados).start()
 
     def conecta_socket(self):
         try:
@@ -26,16 +26,20 @@ class Client_Socket:
             self._set_conexao_status(False)
 
 
-    def verifica_dados(self):
+    def _verifica_dados(self):
         while True:
             if self._conexao_status:
-                dado = self._client.recv(1024).decode("UTF-8")
-                print(dado)
-                if dado:
-                    self._callback_ao_dados(dado)
-                    continue
+                try:
+                    dado = self._client.recv(1024).decode("UTF-8")
+                    if dado:
+                        self._callback_ao_dados(dado)
+                        continue
 
-                self.fechar_conexao()
+                    self.fechar_conexao()
+
+                except Exception:
+
+                    self.fechar_conexao()
 
     def enviar_dados(self, dado):
         if self._conexao_status:

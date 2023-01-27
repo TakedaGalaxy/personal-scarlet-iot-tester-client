@@ -28,7 +28,6 @@ class Interface_Client:
         self._mensagem_recebida_l["text"] = dado
 
     def _conexao_status_mudou(self, status: bool):
-        print(status)
         self._status_client["text"] = "Conectado" if status else "Desconectado"
 
     def _conectar(self):
@@ -118,3 +117,5 @@ class Interface_Client:
         self._criar_estrutura()
 
         self._app.mainloop()
+
+        self._client.fechar_conexao()
